@@ -19,7 +19,7 @@ const User = mongoose.model(
   "User",
   new Schema({
     username: { type: String, required: true },
-    password: { type: String, required: true }
+    password: { type: String }
   })
 );
 
@@ -31,7 +31,6 @@ app.use(session({ secret: "cats", resave: false, saveUninitialized: true }));
 passport.use(
   new LocalStrategy((username, password, done) => {
     User.findOne({ username: username }, (err, user) => {
-      
       if (err) { 
         return done(err);
       }
@@ -46,8 +45,8 @@ passport.use(
           // passwords do not match!
           return done(null, false, { message: "Incorrect password" })
         }
-      });
-      return done(null, user);
+      })
+      // return done(null, user);
     });
   })
 );
@@ -75,26 +74,27 @@ app.get("/", (req, res) => {
 });
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 app.post("/sign-up", (req, res, next) => {
-  const passwordReturn = bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
+  bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
     // if err, do something
     // otherwise, store hashedPassword in DB
-    if (err) { 
-      return next(err);
+    if(err){
+      next(err);
     }
-    else {
-      return hashedPassword;
+    else{
+      const user = new User({
+        username: req.body.username,
+        password: hashedPassword
+      });
+      user.save(err => {
+        if (err) { 
+          return next(err);
+        }
+        res.redirect("/");
+      });
     }
-  });
-  const user = new User({
-    username: req.body.username,
-    password: passwordReturn
-  }).save(err => {
-    if (err) { 
-      return next(err);
-    }
-    res.redirect("/");
   });
 });
+
 app.post(
   "/log-in",
   passport.authenticate("local", {
