@@ -10,7 +10,8 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 const secrets = require('./secrets.js');
 
-const mongoDb = `mongodb+srv://user_01:${secrets}@cluster0.6izrm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+const mongoDb = `mongodb+srv://user_01:${secrets}@cluster0.bc417.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+
 mongoose.connect(mongoDb, { useUnifiedTopology: true, useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
@@ -75,8 +76,6 @@ app.get("/", (req, res) => {
 app.get("/sign-up", (req, res) => res.render("sign-up-form"));
 app.post("/sign-up", (req, res, next) => {
   bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
-    // if err, do something
-    // otherwise, store hashedPassword in DB
     if(err){
       next(err);
     }
